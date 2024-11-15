@@ -28,7 +28,7 @@ def unauthorized(error):
       404:
         description: a resource was not found
     """
-    return make_response(jsonify({"error": "Unauthorized"}), 401))
+    return make_response(jsonify({"error": "Unauthorized"}), 401)
 
 
 if __name__ == "__main__":
