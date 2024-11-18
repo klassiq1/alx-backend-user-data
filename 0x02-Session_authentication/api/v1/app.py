@@ -21,6 +21,15 @@ if getenv('AUTH_TYPE') == "auth":
 elif getenv('AUTH_TYPE') == "basic_auth":
     from api.v1.auth.basic_auth import BasicAuth
     auth = BasicAuth()
+elif getenv('AUTH_TYPE') == "session_auth":
+    from api.v1.auth.session_auth import SessionAuth
+    auth = SessionAuth()
+elif getenv('AUTH_TYPE') == "session_exp_auth":
+    from api.v1.auth.session_exp_auth import SessionExpAuth
+    auth = SessionExpAuth()
+elif getenv('AUTH_TYPE') == "session_db_auth":
+    from api.v1.auth.session_db_auth import SessionDBAuth
+    auth = SessionDBAuth()
 
 
 @app.before_request
@@ -32,15 +41,18 @@ def filteringrequest():
         '/api/v1/stat*',
         '/api/v1/unauthorized/',
         '/api/v1/forbidden/',
+        '/api/v1/auth_session/login/'
     ]
     if not auth.require_auth(request.path, excluded_paths):
         return
 
-    if auth.authorization_header(request) is None:
+    if auth.authorization_header(request) is None and auth.session_cookie(
+            request) is None:
         abort(401)
-
-    if auth.current_user(request) is None:
+    usr = auth.current_user(request)
+    if usr is None:
         abort(403)
+    request.current_user = usr
 
 
 @app.errorhandler(404)
@@ -58,9 +70,7 @@ def unauthorized(error) -> str:
       401:
         description: unautorized access
     """
-    return jsonify(
-                {"error": "Unauthorized"}
-                ), 401
+    return jsonify({"error": "Unauthorized"}), 401
 
 
 @app.errorhandler(403)
