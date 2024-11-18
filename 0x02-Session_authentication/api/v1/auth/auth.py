@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """auth file"""
 from flask import request
@@ -49,4 +48,3 @@ class Auth:
             return None
         cookie_name = os.getenv('SESSION_NAME')
         return request.cookies.get(cookie_name)
-
